@@ -75,8 +75,11 @@ func Remove(element string, elements *[]string) error {
 var config *Config
 var debug bool
 
-func FormatTweet(text string) string {
-	output := text
+func FormatTweet(tweet anaconda.Tweet) string {
+	output := tweet.Text
+	for _, url := range tweet.Entities.Urls {
+		output = fmt.Sprintf("%v%v%v", output[:url.Indices[0]], url.Display_url, output[url.Indices[1]+1:])
+	}
 	users := regexp.MustCompile(`(@(\w){1,15})`)
 	hashtag := regexp.MustCompile(`(#\w+)`)
 
@@ -128,7 +131,7 @@ func main() {
 					go c.Call("privmsg", &PrivMsg{channel, msg}, &reply)
 				}
 			case anaconda.Tweet:
-				msg := fmt.Sprintf("@\002\00302%v\003\002 %v", t.User.ScreenName, FormatTweet(t.Text))
+				msg := fmt.Sprintf("@\002\00302%v\003\002 %v", t.User.ScreenName, FormatTweet(t))
 				for _, channel := range config.Channels {
 					go c.Call("privmsg", &PrivMsg{channel, msg}, &reply)
 				}
