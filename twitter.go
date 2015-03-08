@@ -131,7 +131,7 @@ func main() {
 					go c.Call("privmsg", &PrivMsg{channel, msg}, &reply)
 				}
 			case anaconda.Tweet:
-				msg := fmt.Sprintf("@\002\00302%v\003\002 %v", t.User.ScreenName, FormatTweet(t))
+				msg := fmt.Sprintf("\002\00302@%v\003\002 %v", t.User.ScreenName, FormatTweet(t))
 				for _, channel := range config.Channels {
 					go c.Call("privmsg", &PrivMsg{channel, msg}, &reply)
 				}
