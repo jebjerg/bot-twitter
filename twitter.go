@@ -7,6 +7,7 @@ import (
 	"github.com/ChimeraCoder/anaconda"
 	"github.com/cenkalti/rpc2"
 	irc "github.com/fluffle/goirc/client"
+	"html"
 	"io/ioutil"
 	"net"
 	"regexp"
@@ -76,9 +77,10 @@ var config *Config
 var debug bool
 
 func FormatTweet(tweet anaconda.Tweet) string {
-	output := tweet.Text
+	output := html.UnescapeString(tweet.Text)
 	for _, url := range tweet.Entities.Urls {
-		output = fmt.Sprintf("%v%v%v", output[:url.Indices[0]], url.Display_url, output[url.Indices[1]+1:])
+		output = fmt.Sprintf("%v%v%v", output[:url.Indices[0]], url.Expanded_url, output[url.Indices[1]+1:])
+		break
 	}
 	users := regexp.MustCompile(`(@(\w){1,15})`)
 	hashtag := regexp.MustCompile(`(#\w+)`)
