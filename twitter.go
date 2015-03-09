@@ -82,12 +82,13 @@ func FormatTweet(tweet anaconda.Tweet) string {
 		tweet = *tweet.RetweetedStatus
 		prefix = fmt.Sprintf("RT: @%v", tweet.User.ScreenName)
 	}
-	output := html.UnescapeString(tweet.Text)
+	output := tweet.Text
 	for i := len(tweet.Entities.Urls) - 1; i >= 0; i-- {
 		url := tweet.Entities.Urls[i]
 		output = output[:url.Indices[0]] + url.Expanded_url + output[url.Indices[1]:]
 	}
 	output = prefix + output
+	output = html.UnescapeString(output)
 
 	users := regexp.MustCompile(`(@(\w){1,15})`)
 	hashtag := regexp.MustCompile(`(#\w+)`)
