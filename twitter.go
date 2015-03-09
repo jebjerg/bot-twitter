@@ -78,9 +78,9 @@ var debug bool
 
 func FormatTweet(tweet anaconda.Tweet) string {
 	output := html.UnescapeString(tweet.Text)
-	for _, url := range tweet.Entities.Urls {
-		output = fmt.Sprintf("%v%v%v", output[:url.Indices[0]], url.Expanded_url, output[url.Indices[1]+1:])
-		break
+	for i := len(tweet.Entities.Urls) - 1; i >= 0; i-- {
+		url := tweet.Entities.Urls[i]
+		output = output[:url.Indices[0]] + url.Expanded_url + output[url.Indices[1]:]
 	}
 	users := regexp.MustCompile(`(@(\w){1,15})`)
 	hashtag := regexp.MustCompile(`(#\w+)`)
