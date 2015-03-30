@@ -1,14 +1,13 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/ChimeraCoder/anaconda"
 	"github.com/cenkalti/rpc2"
 	irc "github.com/fluffle/goirc/client"
+	cfg "github.com/jebjerg/go-bot/bot/config"
 	"html"
-	"io/ioutil"
 	"net"
 	"regexp"
 	"strings"
@@ -21,9 +20,8 @@ type PrivMsg struct {
 var api *anaconda.TwitterApi
 
 func init() {
-	var err error
-	config, err = NewConfig("./twitter.json")
-	if err != nil {
+	config = &twitter_conf{}
+	if err := cfg.NewConfig(config, "twitter.json"); err != nil {
 		panic(err)
 	}
 
@@ -32,48 +30,16 @@ func init() {
 	api = anaconda.NewTwitterApi(config.AccessKey, config.AccessSecret)
 }
 
-type Config struct {
+type twitter_conf struct {
 	Channels       []string `json:"channels"`
+	BotHost        string   `json:"bot_host"`
 	ConsumerKey    string   `json:"consumer_key"`
 	ConsumerSecret string   `json:"consumer_secret"`
 	AccessKey      string   `json:"access_key"`
 	AccessSecret   string   `json:"access_secret"`
 }
 
-func (c *Config) Save(path string) error {
-	if data, err := json.MarshalIndent(c, "", "    "); err != nil {
-		return err
-	} else {
-		return ioutil.WriteFile(path, data, 600)
-	}
-}
-
-func NewConfig(path string) (*Config, error) {
-	config := &Config{}
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(data, config)
-	return config, err
-}
-
-func Remove(element string, elements *[]string) error {
-	index := -1
-	for i, e := range *elements {
-		if e == element {
-			index = i
-		}
-	}
-	if index != -1 {
-		*elements = append((*elements)[:index], (*elements)[index+1:]...)
-	} else {
-		return fmt.Errorf("element (%v) not found in (%v)", element, elements)
-	}
-	return nil
-}
-
-var config *Config
+var config *twitter_conf
 var debug bool
 
 func FormatTweet(tweet anaconda.Tweet) string {
@@ -99,10 +65,10 @@ func FormatTweet(tweet anaconda.Tweet) string {
 }
 
 func main() {
-	flag.BoolVar(&debug, "debug", false, "debug mode (localhost xml feed)")
+	flag.BoolVar(&debug, "debug", false, "debug mode")
 	flag.Parse()
 
-	conn, err := net.Dial("tcp", "localhost:1234")
+	conn, err := net.Dial("tcp", config.BotHost)
 	if err != nil {
 		panic(err)
 	}
